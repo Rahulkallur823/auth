@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home Page</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <nav>
+    <ul id="nav-links">
+      <!-- Links will be dynamically updated based on login status -->
+    </ul>
+  </nav>
+
+  <header>
+    <h1>Welcome to Our Amazing Stunner Page!</h1>
+    <p id="welcome-message">This is the landing page where users can either login or register to access more features.</p>
+  </header>
+
+  <script>
+    // Function to check if user is logged in by checking for token
+    function checkAuth() {
+      const token = localStorage.getItem('token');
+
+      if (token) {
+        // Fetch the current user's data using the token
+        fetch('http://localhost:7777/api/current-user', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.username) {
+            // Display the username and update the navbar to show 'Logout'
+            document.getElementById('welcome-message').textContent = `Welcome, ${data.username}!`;
+            document.getElementById('nav-links').innerHTML = `
+              <li><a href="index.html">Home</a></li>
+              <li><a href="#" id="logout">Logout</a></li>
+            `;
+            // Add logout functionality
+            document.getElementById('logout').addEventListener('click', function() {
+              localStorage.removeItem('token'); // Clear the token
+              window.location.reload(); // Reload the page to update the UI
+            });
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching user data:', error);
+          localStorage.removeItem('token'); // Clear the token if an error occurs (e.g., invalid token)
+          showLoginRegisterLinks(); // Show login/register links if token is invalid
+        });
+      } else {
+        // If not logged in, show Login/Register links
+        showLoginRegisterLinks();
+      }
+    }
+
+    // Function to show Login/Register links in the navbar
+    function showLoginRegisterLinks() {
+      document.getElementById('nav-links').innerHTML = `
+        <li><a href="index.html">Home</a></li>
+        <li><a href="login.html">Login</a></li>
+        <li><a href="register.html">Register</a></li>
+      `;
+    }
+
+    // Run the function when the page loads
+    checkAuth();
+  </script>
+</body>
+</html>
